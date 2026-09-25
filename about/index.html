@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How Privacy Toolbox processes your files locally, and what downloads from the CDN.">
+  <meta name="theme-color" content="#f6f7f2">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>About &amp; privacy · Privacy Toolbox</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <script type="module" src="../assets/js/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header"><a class="brand" href="../"><span class="brand-icon" aria-hidden="true">▦</span> Privacy Toolbox<span class="version"> / v1.0</span></a><nav aria-label="Main navigation"><a href="../#tools">All tools</a><a href="../about/">About &amp; privacy <span aria-hidden="true">↗</span></a></nav></header>
+  <main id="main"><article class="about-page"><a class="back-link" href="../">← All tools</a><div class="eyebrow">A SMALL TOOLKIT. A CLEAR PROMISE.</div><h1>Your files are<br><span>your business.</span></h1><p class="intro">Privacy Toolbox brings everyday utilities to your browser, with Python doing the work on your device.</p><section><h2>Local by design</h2><p>Files and text pass from the page to a Web Worker, where Python runs through Pyodide and WebAssembly. Results return to the page for copying or downloading. There is no upload endpoint, account system, analytics, advertising, or application storage of your input.</p></section><section><h2>What connects to the internet?</h2><p>Your browser requests this static site from its host. When you first run a tool, it downloads Pyodide 0.29.3 from jsDelivr. Image tools additionally download Pillow. These requests expose ordinary connection information, such as your IP address, to the hosting and CDN providers. Your files and tool input are not included.</p><p>This release requires a connection to load its runtime. It does not promise offline operation. Browser extensions, your device, clipboard, and downloaded files remain outside the app’s control.</p></section><section><h2>Simple tools, honest limits</h2><p>Hashing reads files in 4 MiB chunks. Other files are limited to 64 MiB, text to 8 MiB, and images to 20 megapixels to manage browser memory. Animated images are rejected. Metadata removal re-encodes pixels and removes embedded EXIF, GPS, text, and color profiles; it cannot remove details visible in the picture. JPEG re-encoding is lossy.</p><p>URL cleaning removes a fixed list of known parameters, not every possible tracking technique. MD5 and SHA-1 are provided for legacy checksum comparison and are unsuitable for cryptographic security. Base64 does not encrypt data.</p></section><section><h2>Built to be inspectable</h2><p>The site uses plain HTML, CSS, JavaScript, and Python. QR generation uses a bundled local Nayuki JavaScript library without loading Python. Passwords and tokens use cryptographic randomness. JWT decoding does not verify signatures. No framework or backend is required. You can inspect the <a href="../assets/js/pyodide-worker.js">worker source</a> and <a href="../python/dispatch.py">Python dispatcher</a> directly.</p><p>Built with <a href="https://pyodide.org/en/0.29.3/">Pyodide</a> and <a href="https://pillow.readthedocs.io/">Pillow</a>.</p></section></article></main>
+  <footer><a class="brand small" href="../"><span class="brand-icon" aria-hidden="true">▦</span> Privacy Toolbox</a><span>A small toolkit. A little more privacy.</span><a href="../about/">How it works ↗</a></footer>
+</body>
+</html>

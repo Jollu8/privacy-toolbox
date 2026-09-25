@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# Python development and staged Pages artifact
+__pycache__/
+*.py[cod]
+.venv/
+_site/
+node_modules/
+playwright-report/
+test-results/
