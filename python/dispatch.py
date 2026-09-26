@@ -7,6 +7,7 @@ from json_tool import transform
 from privacy_tools import run as privacy_run
 from text_tools import run as text_run
 from data_tools import run as data_run
+from network_tools import run as network_run
 
 
 def dispatch(action, options, data=b''):
@@ -38,6 +39,8 @@ def dispatch(action, options, data=b''):
         result = text_run(action, options)
     elif action in {'csv-json', 'url-encoder', 'timestamp', 'jwt-decoder'}:
         result = data_run(action, options)
+    elif action in {'ip-calculator', 'bitwise-calculator', 'hex-viewer'}:
+        result = network_run(action, options, data)
     else:
         raise ValueError('Unknown tool.')
     return json.dumps(result, ensure_ascii=False)

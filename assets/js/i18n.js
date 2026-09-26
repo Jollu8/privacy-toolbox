@@ -39,7 +39,7 @@ while (walker.nextNode()) {
   const node = walker.currentNode;
   if (node.parentElement.closest('script, style, textarea, .language-switch, [aria-hidden="true"]')) continue;
   const source = node.textContent;
-  if (ru[source.trim()]) records.push({ node, source });
+  if (ru[source.trim()] || /^\d+ tools?$/.test(source.trim())) records.push({ node, source });
 }
 for (const node of document.querySelectorAll('[placeholder], [aria-label], [alt], meta[name="description"]')) {
   for (const attribute of ['placeholder', 'aria-label', 'alt', 'content']) {

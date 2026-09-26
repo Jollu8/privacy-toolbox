@@ -11,7 +11,7 @@ async function initialize(id) {
       status(id, 'Loading Python engine… The first download may take a moment.');
       importScripts(`${INDEX_URL}pyodide.js`);
       const py = await loadPyodide({ indexURL: INDEX_URL });
-      const modules = ['hash_tool', 'url_cleaner', 'base64_tool', 'json_tool', 'image_tool', 'privacy_tools', 'text_tools', 'data_tools', 'dispatch'];
+      const modules = ['hash_tool', 'url_cleaner', 'base64_tool', 'json_tool', 'image_tool', 'privacy_tools', 'text_tools', 'data_tools', 'network_tools', 'dispatch'];
       await Promise.all(modules.map(async name => {
         const response = await fetch(new URL(`../../python/${name}.py`, self.location.href));
         if (!response.ok) throw new Error(`Could not load Python module: ${name}`);

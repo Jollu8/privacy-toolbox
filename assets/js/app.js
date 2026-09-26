@@ -74,9 +74,16 @@ if (action) {
     target.append(list);
   };
   const updateFields = () => {
-    if (action === 'base64') {
-      const fileMode = $('mode').value === 'encode-file';
+    if (action === 'base64' || action === 'hex-viewer') {
+      const fileMode = $('mode').value === (action === 'hex-viewer' ? 'file' : 'encode-file');
       $('file-field').hidden = !fileMode; $('text-field').hidden = fileMode;
+    }
+    if (action === 'ip-calculator') $('other-field').hidden = $('mode').value === 'collapse';
+    if (action === 'bitwise-calculator') {
+      $('operand-b-field').hidden = !['and', 'or', 'xor'].includes($('mode').value);
+      $('shift-field').hidden = !['left', 'right', 'arithmetic'].includes($('mode').value);
+      $('shift').max = Number($('width').value) - 1;
+      $('shift').disabled = $('shift-field').hidden;
     }
     if ($('quality-field')) {
       const format = $('output').value === 'original' ? imageInfo?.format : $('output').value;
@@ -104,7 +111,7 @@ if (action) {
     clearResult(); selectedFile = undefined; imageInfo = undefined;
     $('image-info')?.replaceChildren();
     if (!file) { localizeText($('file-info'), 'No file selected'); return; }
-    if (action !== 'hash' && file.size > 64 * 1024 ** 2) {
+    if (!['hash', 'hex-viewer'].includes(action) && file.size > 64 * 1024 ** 2) {
       localizeText($('file-info'), 'File exceeds the 64 MiB limit.'); $('file').value = '';
       say('Choose a file of 64 MiB or smaller.', true); return;
     }
@@ -171,6 +178,18 @@ if (action) {
       $('result-text').value = output; $('result-text').hidden = false; $('copy').hidden = false;
       if (!result.sensitive) download(new Blob([output], {type: 'text/plain;charset=utf-8'}), result.extension || (action === 'json' ? 'json' : 'txt'));
     }
+    if (result.fields) {
+      const list = document.createElement('dl');
+      for (const [key, value] of Object.entries(result.fields)) {
+        const term = document.createElement('dt'), description = document.createElement('dd');
+        localizeText(term, key);
+        if (typeof value === 'boolean') localizeText(description, value ? 'Yes' : 'No');
+        else if (key === 'Word decoding') localizeText(description, value);
+        else description.textContent = value;
+        list.append(term, description);
+      }
+      $('result-details').append(list);
+    }
     for (const message of result.details || []) detail(message);
     if (result.removed) detail(result.removed.length ? `Removed: ${result.removed.join(', ')}` : 'No known tracking parameters found.');
     for (const item of result.items || []) {
@@ -200,7 +219,7 @@ if (action) {
     const options = {};
     for (const input of $('tool-form').querySelectorAll('[name]')) options[input.name] = input.type === 'checkbox' ? input.checked : input.value;
     options.resize_anchor = resizeAnchor;
-    const needsFile = action === 'hash' || isImage || (action === 'base64' && options.mode === 'encode-file');
+    const needsFile = action === 'hash' || isImage || (action === 'base64' && options.mode === 'encode-file') || (action === 'hex-viewer' && options.mode === 'file');
     if (needsFile && !selectedFile) { say('Choose a file first.', true); $('file').focus(); return; }
     if (action === 'base64' && needsFile) delete options.text;
     for (const key of ['text','modified']) if (new TextEncoder().encode(options[key] || '').byteLength > 8 * 1024 ** 2) { say('Text must be 8 MiB or smaller.', true); return; }
@@ -221,7 +240,15 @@ if (action) {
         }
         result = await runPython('hash-finish', {});
       } else {
-        const buffer = needsFile ? await selectedFile.arrayBuffer() : undefined; guard();
+        let buffer;
+        if (needsFile && action === 'hex-viewer') {
+          const offset = Number(options.offset);
+          if (!Number.isSafeInteger(offset) || offset < 0 || offset >= selectedFile.size) throw new Error('The offset must point to a byte in non-empty input.');
+          options.total_size = selectedFile.size;
+          delete options.text;
+          buffer = await selectedFile.slice(offset, offset + 4096).arrayBuffer();
+        } else buffer = needsFile ? await selectedFile.arrayBuffer() : undefined;
+        guard();
         result = await runPython(action, options, buffer, say);
       }
       guard(); render(result); say('Done. Your input was processed on this device.');
