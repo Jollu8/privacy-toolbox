@@ -1,3 +1,4 @@
+import { localizeText } from './i18n.js';
 import { runPython, resetEngine } from './python-bridge.js';
 const $ = id => document.getElementById(id);
 const bytesLabel = size => size < 1024 ? `${size} B` : size < 1024 ** 2 ? `${(size / 1024).toFixed(1)} KiB` : `${(size / 1024 ** 2).toFixed(2)} MiB`;
@@ -10,16 +11,17 @@ if ($('search')) {
     const query = $('search').value.trim().toLowerCase();
     let count = 0;
     for (const card of document.querySelectorAll('.tool-card')) {
-      card.hidden = !(category === 'all' || card.dataset.category === category) || !card.dataset.search.includes(query);
+      card.hidden = !(category === 'all' || card.dataset.category === category) || !(card.dataset.search + ' ' + card.textContent.toLowerCase()).includes(query);
       if (!card.hidden) count++;
     }
     for (const button of buttons) {
       button.classList.toggle('active', button.dataset.filter === category);
       button.setAttribute('aria-pressed', String(button.dataset.filter === category));
     }
-    $('tool-count').textContent = `${count} tool${count === 1 ? '' : 's'}`;
+    localizeText($('tool-count'), `${count} tool${count === 1 ? '' : 's'}`);
     $('no-tools').hidden = count !== 0;
   };
+  document.addEventListener('languagechange', filter);
   $('search').addEventListener('input', filter);
   for (const button of buttons) button.addEventListener('click', () => { category = button.dataset.filter; filter(); });
   filter();
@@ -33,7 +35,7 @@ if (action) {
   let busy = false, cancelled = false;
   const isImage = action.startsWith('image-');
   const say = (message, error = false) => {
-    $('status').textContent = message;
+    localizeText($('status'), message);
     $('status').classList.toggle('error', error);
   };
   const makeUrl = blob => { const url = URL.createObjectURL(blob); urls.push(url); return url; };
@@ -44,7 +46,7 @@ if (action) {
     $('download').removeAttribute('href'); $('download-svg').removeAttribute('href'); $('preview').removeAttribute('src');
     $('result-text').value = '';
     $('result-details').replaceChildren();
-    $('copy').textContent = 'Copy result';
+    localizeText($('copy'), 'Copy result');
     $('result-empty').hidden = false;
   };
   const lock = value => {
@@ -56,16 +58,17 @@ if (action) {
   };
   const guard = () => { if (cancelled) throw new Error('Processing cancelled. You can try again.'); };
   const copyText = async (text, button) => {
-    try { await navigator.clipboard.writeText(text); button.textContent = 'Copied!'; }
+    try { await navigator.clipboard.writeText(text); localizeText(button, 'Copied!'); }
     catch { $('result-text').focus(); $('result-text').select(); say('Clipboard access is unavailable. Select and copy the result manually.'); }
   };
-  const detail = text => { const p = document.createElement('p'); p.textContent = text; $('result-details').append(p); };
+  const detail = text => { const p = document.createElement('p'); localizeText(p, text); $('result-details').append(p); };
   const metadata = (target, values) => {
     const list = document.createElement('dl');
     for (const [key, value] of Object.entries(values)) {
       const term = document.createElement('dt'), description = document.createElement('dd');
-      term.textContent = key;
-      description.textContent = typeof value === 'boolean' ? (value ? 'Detected' : 'Not found') : String(value);
+      localizeText(term, key === 'Format' ? 'Image format' : key);
+      if (typeof value === 'boolean' || value === 'Not found') localizeText(description, value === true ? 'Detected' : 'Not found');
+      else description.textContent = String(value);
       list.append(term, description);
     }
     target.append(list);
@@ -89,7 +92,7 @@ if (action) {
       imageInfo = await runPython('image-inspect', {}, buffer, say); guard();
       $('image-info').replaceChildren();
       const p = document.createElement('p');
-      p.textContent = `Original: ${imageInfo.width} × ${imageInfo.height} pixels · ${imageInfo.format}`;
+      localizeText(p, `Original: ${imageInfo.width} × ${imageInfo.height} pixels · ${imageInfo.format}`);
       $('image-info').append(p); metadata($('image-info'), imageInfo.metadata);
       if ($('width')) { $('width').value = imageInfo.width; $('height').value = imageInfo.height; resizeAnchor = 'width'; }
       updateFields(); say('Image inspected. Choose your settings, then process.');
@@ -100,12 +103,13 @@ if (action) {
     if (busy) return;
     clearResult(); selectedFile = undefined; imageInfo = undefined;
     $('image-info')?.replaceChildren();
-    if (!file) { $('file-info').textContent = 'No file selected'; return; }
+    if (!file) { localizeText($('file-info'), 'No file selected'); return; }
     if (action !== 'hash' && file.size > 64 * 1024 ** 2) {
-      $('file-info').textContent = 'File exceeds the 64 MiB limit.'; $('file').value = '';
+      localizeText($('file-info'), 'File exceeds the 64 MiB limit.'); $('file').value = '';
       say('Choose a file of 64 MiB or smaller.', true); return;
     }
     selectedFile = file;
+    delete $('file-info').dataset.message;
     $('file-info').textContent = `${file.name} · ${bytesLabel(file.size)}`;
     say('File selected. Ready to process locally.');
     if (isImage) void inspect();
@@ -141,7 +145,7 @@ if (action) {
     $('tool-form').reset();
     for (const textarea of $('tool-form').querySelectorAll('textarea')) textarea.value = '';
     selectedFile = imageInfo = undefined; resizeAnchor = 'width';
-    if ($('file-info')) $('file-info').textContent = 'No file selected';
+    if ($('file-info')) localizeText($('file-info'), 'No file selected');
     $('image-info')?.replaceChildren();
     clearResult(); updateFields(); resetEngine(); say('Cleared. Ready for a new input.');
   });
@@ -152,7 +156,7 @@ if (action) {
     const url = makeUrl(blob);
     $('download').href = url;
     $('download').download = `${name}.${extension}`;
-    $('download').textContent = `Download ${extension.toUpperCase()} · ${bytesLabel(blob.size)} ↓`;
+    localizeText($('download'), `Download ${extension.toUpperCase()} · ${bytesLabel(blob.size)} ↓`);
     $('download').hidden = false;
     return url;
   };
@@ -172,7 +176,7 @@ if (action) {
     for (const item of result.items || []) {
       const row = document.createElement('div'); row.className = 'uuid-row';
       const code = document.createElement('code'); code.textContent = item;
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'secondary compact'; button.textContent = 'Copy one';
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'secondary compact'; localizeText(button, 'Copy one');
       button.addEventListener('click', () => copyText(item, button)); row.append(code, button); $('result-details').append(row);
     }
     if (result.base64 !== undefined || result.blob) {

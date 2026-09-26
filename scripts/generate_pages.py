@@ -10,7 +10,7 @@ def page(title, description, body, prefix='./', tool=None, home=False):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{escape(description, quote=True)}">
-  <meta name="theme-color" content="#f6f7f2">
+  <meta name="theme-color" content="#f3f4f8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
   <title>{escape(title)} · Privacy Toolbox</title>
   <link rel="icon" href="{prefix}assets/favicon.svg" type="image/svg+xml">
@@ -19,7 +19,7 @@ def page(title, description, body, prefix='./', tool=None, home=False):
 </head>
 <body{f' data-tool="{tool}"' if tool else ''}{' class="home-page"' if home else ''}>
   <a class="skip" href="#main">Skip to content</a>
-  <header class="site-header"><a class="brand" href="{prefix}"><span class="brand-icon" aria-hidden="true">▦</span> Privacy Toolbox<span class="version"> / 20 tools</span></a><nav aria-label="Main navigation"><a href="{prefix}#tools">All tools</a><a href="{prefix}about/">About &amp; privacy <span aria-hidden="true">↗</span></a></nav></header>
+  <header class="site-header"><a class="brand" href="{prefix}"><span class="brand-icon" aria-hidden="true">▦</span> Privacy Toolbox<span class="version"> / 20 tools</span></a><nav aria-label="Main navigation"><a href="{prefix}#tools">All tools</a><a href="{prefix}about/">About &amp; privacy <span aria-hidden="true">↗</span></a><select class="language-switch" aria-label="Language / Язык"><option value="en">EN</option><option value="ru">RU</option></select></nav></header>
   <main id="main">{body}</main>
   <footer><a class="brand small" href="{prefix}"><span class="brand-icon" aria-hidden="true">▦</span> Privacy Toolbox</a><span>{'20 tools for everyday tasks' if home else 'A small toolkit. A little more privacy.'}</span><a href="{prefix}about/">How it works ↗</a></footer>
 </body>

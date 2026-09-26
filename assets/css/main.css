@@ -994,7 +994,7 @@ small {
 @media (max-width: 600px) { .catalog-bar .filters { max-width: 100%; } .popular>div { gap: 7px; } .popular a { font-size: 11px; } }
 
 /* Catalog: compact workspace, with the tools directly below search. */
-.home-page {
+body {
   --bg: #f3f4f8;
   --ink: #303847;
   --muted: #697383;
@@ -1004,11 +1004,11 @@ small {
               radial-gradient(ellipse at 98% 30%, #f3eee9 0, transparent 48%), #f3f4f8;
   min-height: 100vh;
 }
-.home-page .site-header { height: 76px; border-bottom-color: #dce1e9; }
-.home-page .brand-icon { background: #485c73; color: #f3f5fa; }
-.home-page .brand { font-size: 17px; }
-.home-page .version { display: none; }
-.home-page nav a { color: #596576; }
+.site-header { height: 76px; border-bottom-color: #dce1e9; }
+.brand-icon { background: #485c73; color: #f3f5fa; }
+.brand { font-size: 17px; }
+.version { display: none; }
+nav a { color: #596576; }
 .catalog-intro { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 32px 0 26px; }
 .catalog-intro h1 { font-size: 32px; line-height: 1.2; letter-spacing: -1.1px; font-weight: 600; margin: 0 0 8px; }
 .catalog-intro p { color: var(--muted); font-size: 14px; margin: 0; }
@@ -1043,18 +1043,18 @@ small {
 .home-page .tool-card:hover .card-arrow { color: #465b76; }
 .catalog-note { margin: 27px 0 30px; font-size: 11px; color: #7b8594; text-align: center; }
 .catalog-note a { margin-left: 6px; }
-.home-page footer { padding: 22px 0; }
+footer { padding: 22px 0; }
 .home-page #no-tools { text-align: center; padding: 48px 20px; color: var(--muted); }
 @media (max-width: 1050px) {
   .home-page .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-total { display: none; }
 }
 @media (max-width: 700px) {
-  .home-page .site-header, .home-page main, .home-page footer { margin-left: 20px; margin-right: 20px; }
-  .home-page .site-header { height: 64px; }
-  .home-page .brand { font-size: 15px; }
-  .home-page .brand-icon { width: 30px; height: 30px; font-size: 22px; }
-  .home-page nav a { font-size: 11px; }
+  .site-header, .home-page main, footer { margin-left: 20px; margin-right: 20px; }
+  .site-header { height: 64px; }
+  .brand { font-size: 15px; }
+  .brand-icon { width: 30px; height: 30px; font-size: 22px; }
+  nav a { font-size: 11px; }
   .catalog-intro { padding: 24px 0 20px; }
   .catalog-intro h1 { font-size: 25px; letter-spacing: -.8px; margin-bottom: 7px; }
   .catalog-intro p { font-size: 13px; line-height: 1.65; max-width: 340px; }
@@ -1073,9 +1073,25 @@ small {
   .catalog-note { text-align: left; line-height: 1.8; margin: 22px 0; }
 }
 @media (max-width: 360px) {
-  .home-page .site-header, .home-page main, .home-page footer { margin-left: 14px; margin-right: 14px; }
-  .home-page .brand { font-size: 14px; }
+  .site-header, .home-page main, footer { margin-left: 14px; margin-right: 14px; }
+  .brand { font-size: 14px; }
   .catalog-intro h1 { font-size: 23px; }
   .home-page .tool-card { grid-template-columns: 34px minmax(0,1fr) 10px; gap: 10px; padding: 15px 12px; }
   .home-page .tool-icon { width: 34px; height: 34px; font-size: 17px; }
+}
+
+/* Shared surfaces and navigation on every page. */
+.result-panel { background: #edf0f6; }
+select, textarea, .number, #result-text { background: #fafbfe; }
+.dropzone { background: #f6f8fc; border-color: #b9c5d6; }
+.dropzone.dragging { background: #e5ebf5; }
+.drop-icon, .local-label, .panel-heading h2, .result-empty { color: #687c96; }
+h1 span { color: #687c96; }
+.primary:hover { background: #384b63; }
+.site-header nav { align-items: center; gap: 20px; }
+.language-switch { width: auto; margin: 0; padding: 5px 8px; font-size: 12px; }
+@media (max-width: 700px) {
+  .site-header { height: auto; min-height: 76px; flex-wrap: wrap; gap: 8px; padding: 12px 0; }
+  .site-header nav { gap: 12px; flex-wrap: wrap; }
+  .tool-page h1, .about-page h1 { overflow-wrap: anywhere; }
 }

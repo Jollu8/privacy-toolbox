@@ -29,7 +29,7 @@ class Handler(SimpleHTTPRequestHandler):
         pass
 
 
-server = ThreadingHTTPServer(('127.0.0.1', 0), partial(Handler, directory=str(ROOT)))
+server = ThreadingHTTPServer(('127.0.0.1', 0), partial(Handler, directory=str(ROOT / os.environ.get('PRIVACY_SITE_ROOT', '.'))))
 thread = threading.Thread(target=server.serve_forever, daemon=True)
 thread.start()
 base = f'http://127.0.0.1:{server.server_port}/privacy-toolbox/'
@@ -59,6 +59,37 @@ try:
         page.set_viewport_size({'width': 1440, 'height': 1100})
         print('PASS catalog, lazy loading, filters, desktop and mobile', flush=True)
 
+        # Language must persist across routes without changing user input.
+        page.locator('.language-switch').select_option('ru')
+        expect(page.locator('html')).to_have_attribute('lang', 'ru')
+        page.locator('#search').fill('парол')
+        expect(page.locator('.tool-card:visible')).to_have_count(1)
+        page.locator('.tool-card:visible').click()
+        expect(page.locator('h1')).to_have_text('Генератор паролей')
+        palette = page.evaluate("getComputedStyle(document.body).getPropertyValue('--bg')")
+        page.goto(base + 'about/')
+        expect(page.locator('h1')).to_contain_text('Ваши файлы')
+        assert palette == page.evaluate("getComputedStyle(document.body).getPropertyValue('--bg')")
+        page.goto(base + 'tools/qr-generator/')
+        page.locator('#text').fill('Copy result')
+        page.locator('button[type=submit]').click()
+        expect(page.locator('#status')).to_contain_text('Готово.')
+        page.locator('.language-switch').select_option('en')
+        expect(page.locator('#text')).to_have_value('Copy result')
+        expect(page.locator('#status')).to_contain_text('Done.')
+        expect(page.locator('h1')).to_have_text('QR Code Generator')
+        page.reload()
+        expect(page.locator('html')).to_have_attribute('lang', 'en')
+        for route in ['', 'about/', 'tools/json-formatter/']:
+            page.goto(base + route)
+            assert palette == page.evaluate("getComputedStyle(document.body).getPropertyValue('--bg')")
+            page.locator('.language-switch').select_option('ru')
+            page.set_viewport_size({'width': 320, 'height': 844})
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), route
+            page.locator('.language-switch').select_option('en')
+            page.set_viewport_size({'width': 1440, 'height': 1100})
+        print('PASS RU/EN, persistence, unchanged input, shared palette and mobile routes', flush=True)
+
         def go(tool):
             page.goto(base + 'tools/' + tool + '/')
 
@@ -70,6 +101,12 @@ try:
         page.locator('#file').set_input_files({'name': 'private.txt', 'mimeType': 'text/plain', 'buffer': b'abc'})
         run()
         expect(page.locator('#result-text')).to_have_value(hashlib.sha256(b'abc').hexdigest())
+        page.locator('.language-switch').select_option('ru')
+        expect(page.locator('#file-info')).to_contain_text('private.txt')
+        expect(page.locator('#result-text')).to_have_value(hashlib.sha256(b'abc').hexdigest())
+        expect(page.locator('#status')).to_contain_text('Готово.')
+        page.screenshot(path=str(Path(tempfile.gettempdir()) / 'privacy-tool-ru.png'), full_page=True)
+        page.locator('.language-switch').select_option('en')
         assert not any('pillow' in url.lower() for _, url in requests), 'Hash loaded Pillow'
         for algorithm in ['sha384', 'sha512', 'sha1', 'md5']:
             page.locator('#algorithm').select_option(algorithm)
@@ -249,6 +286,14 @@ try:
         assert not any('example.com' in url for _, url in requests)
         assert all(url.startswith((base, 'https://cdn.jsdelivr.net/pyodide/v0.29.3/full/', f'blob:http://127.0.0.1:{server.server_port}/')) for _, url in requests), requests
         print('PASS no page errors; network limited to static assets and runtime GET requests', flush=True)
+        restricted = browser.new_context()
+        restricted.add_init_script("Object.defineProperty(window, 'localStorage', {get() {throw new Error('Storage disabled')}})")
+        restricted_page = restricted.new_page()
+        restricted_page.goto(base)
+        restricted_page.locator('.language-switch').select_option('ru')
+        expect(restricted_page.locator('html')).to_have_attribute('lang', 'ru')
+        restricted.close()
+        print('PASS language switch with browser storage disabled', flush=True)
         browser.close()
 finally:
     server.shutdown()

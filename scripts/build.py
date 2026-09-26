@@ -1,6 +1,9 @@
 """Stage only public assets for GitHub Pages; no bundling or dependencies."""
 from pathlib import Path
 import shutil
+from generate_pages import generate
+
+generate()
 
 ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / '_site'
